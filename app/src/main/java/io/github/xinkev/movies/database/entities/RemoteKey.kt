@@ -5,10 +5,9 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "RemoteKeys")
 data class RemoteKey(
+    @PrimaryKey
+    var id: Long,
     val currentPage: Int,
     val prevPage: Int?,
     val nextPage: Int?
-) {
-    @PrimaryKey
-    var id: Int = 0
-}
+)

@@ -4,47 +4,47 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
-import androidx.paging.RemoteMediator.MediatorResult.Error
-import androidx.paging.RemoteMediator.MediatorResult.Success
 import androidx.room.withTransaction
 import io.github.xinkev.movies.database.Database
 import io.github.xinkev.movies.database.entities.MovieCache
-import io.github.xinkev.movies.database.entities.PopularMovieEntry
 import io.github.xinkev.movies.database.entities.RemoteKey
 import io.github.xinkev.movies.database.entities.RemoteKeyIds
-import io.github.xinkev.movies.database.relationships.PopularMovieCache
+import io.github.xinkev.movies.database.entities.UpcomingMovieEntry
+import io.github.xinkev.movies.database.relationships.UpcomingMovieCache
 import io.github.xinkev.movies.remote.MovieDBApi
-import io.github.xinkev.movies.remote.models.PopularMoviesResponse
+import io.github.xinkev.movies.remote.RetrofitClient
+import io.github.xinkev.movies.remote.models.UpcomingMoviesResponse
 import okio.IOException
 import retrofit2.HttpException
 
 @OptIn(ExperimentalPagingApi::class)
-class PopularMoviesRemoteMediator(
-    private val api: MovieDBApi,
+class UpcomingMoviesRemoteMediator constructor(
     private val db: Database,
-) : RemoteMediator<Int, PopularMovieCache>() {
-    private val popularTableDao = db.popularTableDao()
-    private val movieDao = db.moviesDao()
+    private val api: MovieDBApi,
+) : RemoteMediator<Int, UpcomingMovieCache>() {
     private val remoteKeyDao = db.remoteKeyDao()
-    private val popularMovieDao = db.popularMovieDao()
+    private val movieDao = db.moviesDao()
+    private val upcomingMovieDao = db.upcomingMovieDao()
+    private val upcomingEntryDao = db.upcomingEntryDao()
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, PopularMovieCache>
+        state: PagingState<Int, UpcomingMovieCache>
     ): MediatorResult {
         return try {
-            val response = fetch(loadType) ?: return Success(endOfPaginationReached = true)
+            val response =
+                fetch(loadType) ?: return MediatorResult.Success(endOfPaginationReached = true)
             val remoteKey = store(response, loadType)
-            Success(endOfPaginationReached = remoteKey.nextPage == null)
+            MediatorResult.Success(endOfPaginationReached = remoteKey.nextPage == null)
         } catch (e: IOException) {
-            Error(e)
+            MediatorResult.Error(e)
         } catch (e: HttpException) {
-            Error(e)
+            MediatorResult.Error(e)
         }
     }
 
-    private suspend fun fetch(loadType: LoadType): PopularMoviesResponse? {
-        val loadKey = when (loadType) {
+    private suspend fun fetch(loadType: LoadType): UpcomingMoviesResponse? {
+        val nextPage = when (loadType) {
             LoadType.REFRESH -> null
             LoadType.PREPEND -> return null
             LoadType.APPEND -> {
@@ -57,29 +57,25 @@ class PopularMoviesRemoteMediator(
                 remoteKey.nextPage
             }
         }
-
-        return api.getPopularMovies(page = loadKey)
+        return api.getUpcomingMovies(page = nextPage)
     }
 
-    private suspend fun store(
-        response: PopularMoviesResponse,
-        loadType: LoadType
-    ): RemoteKey {
+    private suspend fun store(response: UpcomingMoviesResponse, loadType: LoadType): RemoteKey {
         val remoteKey = RemoteKey(
-            id = RemoteKeyIds.popularMovies,
+            id = RemoteKeyIds.upcomingMovies,
             currentPage = response.page,
             nextPage = if (response.page < response.totalPages) response.page + 1 else null,
             prevPage = if (response.page > 1) response.page - 1 else null
         )
         db.withTransaction {
             if (loadType == LoadType.REFRESH) {
-                popularMovieDao.deleteAll()
+                upcomingMovieDao.deleteAll()
             }
             remoteKeyDao.insertOrReplace(remoteKey)
             val movies = response.results.map { MovieCache.fromResponse(it) }
-            val popularTableEntries = movies.map { PopularMovieEntry(movieId = it.id) }
+            val upcomingEntries = movies.map { movie -> UpcomingMovieEntry(movieId = movie.id) }
             movieDao.insertAll(movies)
-            popularTableDao.insertAll(popularTableEntries)
+            upcomingEntryDao.insertAll(upcomingEntries)
         }
         return remoteKey
     }

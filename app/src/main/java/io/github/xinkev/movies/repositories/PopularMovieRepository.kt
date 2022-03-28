@@ -20,7 +20,7 @@ class PopularMovieRepository @Inject constructor(
     val popularMoviesFlow
         get(): Flow<PagingData<PopularMovieCache>> = Pager(
             config = PagingConfig(pageSize = 40),
-            remoteMediator = PopularMoviesRemoteMediator(retrofitClient = retrofitClient, db = db)
+            remoteMediator = PopularMoviesRemoteMediator(api = retrofitClient.movieDBApi, db = db)
         ) {
             dao.getAll()
         }.flow

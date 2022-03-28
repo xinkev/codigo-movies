@@ -22,7 +22,7 @@ fun PopularMovies(popularMovies: LazyPagingItems<PopularMovieCache>) {
     Column {
         Text(
             text = "Popular",
-            fontWeight = FontWeight.Black,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 16.dp, start = 16.dp, bottom = 8.dp)
         )
         LazyRow {
