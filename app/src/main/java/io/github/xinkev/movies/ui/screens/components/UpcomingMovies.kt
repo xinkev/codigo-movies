@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
@@ -66,7 +67,9 @@ private fun UpcomingMovieListItem(movie: UpcomingMovieCache) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = movie.data.overview,
-                style = MaterialTheme.typography.caption
+                style = MaterialTheme.typography.caption,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 6
             )
             Spacer(modifier = Modifier.height(8.dp))
             Votes(movie.data.voteCount)
