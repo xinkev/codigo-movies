@@ -21,6 +21,7 @@ import com.skydoves.landscapist.glide.GlideImage
 import io.github.xinkev.movies.database.relationships.UpcomingMovieCache
 import io.github.xinkev.movies.ui.components.ErrorMessage
 import io.github.xinkev.movies.ui.components.LoadingView
+import io.github.xinkev.movies.ui.components.Votes
 
 @Composable
 fun UpcomingMovies(upcomingMovies: LazyPagingItems<UpcomingMovieCache>) {
@@ -68,18 +69,12 @@ private fun UpcomingMovieListItem(movie: UpcomingMovieCache) {
                 style = MaterialTheme.typography.caption
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Row {
-                Icon(
-                    imageVector = Icons.Default.FavoriteBorder,
-                    contentDescription = null,
-                    tint = Color.Red
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(text = "${movie.data.voteCount}")
-            }
+            Votes(movie.data.voteCount)
         }
     }
 }
+
+
 
 private fun LazyListScope.showLoadingState(
     loadState: LoadState,

@@ -7,7 +7,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemsIndexed
@@ -16,10 +18,11 @@ import com.skydoves.landscapist.glide.GlideImage
 import io.github.xinkev.movies.database.relationships.PopularMovieCache
 import io.github.xinkev.movies.ui.components.ErrorMessage
 import io.github.xinkev.movies.ui.components.LoadingView
+import io.github.xinkev.movies.ui.components.Votes
 
 @Composable
 fun PopularMovies(popularMovies: LazyPagingItems<PopularMovieCache>) {
-    Column {
+    Column(modifier = Modifier.height(300.dp)) {
         Text(
             text = "Popular",
             fontWeight = FontWeight.Bold,
@@ -35,7 +38,7 @@ fun PopularMovies(popularMovies: LazyPagingItems<PopularMovieCache>) {
                     if (index == 0) {
                         Spacer(modifier = Modifier.width(8.dp))
                     }
-                    Poster(movie)
+                    ListItem(movie)
                     Spacer(modifier = Modifier.width(8.dp))
                 }
             }
@@ -48,7 +51,7 @@ fun PopularMovies(popularMovies: LazyPagingItems<PopularMovieCache>) {
 }
 
 @Composable
-private fun Poster(movie: PopularMovieCache) {
+private fun ListItem(movie: PopularMovieCache) {
     Column(modifier = Modifier.width(IntrinsicSize.Min)) {
         GlideImage(
             imageModel = "https://image.tmdb.org/t/p/w500${movie.data.posterPath}",
@@ -60,8 +63,11 @@ private fun Poster(movie: PopularMovieCache) {
         Text(
             text = movie.data.title,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier.padding(vertical = 8.dp),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1
         )
+        Votes(voteCount = movie.data.voteCount)
     }
 }
 
