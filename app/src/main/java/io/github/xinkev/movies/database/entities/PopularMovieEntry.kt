@@ -12,7 +12,7 @@ import androidx.room.PrimaryKey
     ],
     foreignKeys = [
         ForeignKey(
-            entity = MovieCache::class,
+            entity = Movie::class,
             parentColumns = arrayOf("id"),
             childColumns = arrayOf("movieId"),
             onUpdate = ForeignKey.CASCADE,

@@ -8,11 +8,11 @@ import androidx.paging.RemoteMediator.MediatorResult.Error
 import androidx.paging.RemoteMediator.MediatorResult.Success
 import androidx.room.withTransaction
 import io.github.xinkev.movies.database.Database
-import io.github.xinkev.movies.database.entities.MovieCache
+import io.github.xinkev.movies.database.entities.Movie
 import io.github.xinkev.movies.database.entities.PopularMovieEntry
 import io.github.xinkev.movies.database.entities.RemoteKey
 import io.github.xinkev.movies.database.entities.RemoteKeyIds
-import io.github.xinkev.movies.database.relationships.PopularMovieCache
+import io.github.xinkev.movies.database.relationships.PopularMovie
 import io.github.xinkev.movies.remote.MovieDBApi
 import io.github.xinkev.movies.remote.models.PopularMoviesResponse
 import okio.IOException
@@ -22,15 +22,14 @@ import retrofit2.HttpException
 class PopularMoviesRemoteMediator(
     private val api: MovieDBApi,
     private val db: Database,
-) : RemoteMediator<Int, PopularMovieCache>() {
+) : RemoteMediator<Int, PopularMovie>() {
     private val popularTableDao = db.popularTableDao()
     private val movieDao = db.moviesDao()
     private val remoteKeyDao = db.remoteKeyDao()
-    private val popularMovieDao = db.popularMovieDao()
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, PopularMovieCache>
+        state: PagingState<Int, PopularMovie>
     ): MediatorResult {
         return try {
             val response = fetch(loadType) ?: return Success(endOfPaginationReached = true)
@@ -73,10 +72,10 @@ class PopularMoviesRemoteMediator(
         )
         db.withTransaction {
             if (loadType == LoadType.REFRESH) {
-                popularMovieDao.deleteAll()
+                movieDao.deleteAllPopularMovies()
             }
             remoteKeyDao.insertOrReplace(remoteKey)
-            val movies = response.results.map { MovieCache.fromResponse(it) }
+            val movies = response.results.map { Movie.fromResponse(it) }
             val popularTableEntries = movies.map { PopularMovieEntry(movieId = it.id) }
             movieDao.insertAll(movies)
             popularTableDao.insertAll(popularTableEntries)

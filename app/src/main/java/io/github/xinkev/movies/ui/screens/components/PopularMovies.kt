@@ -9,19 +9,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import com.skydoves.landscapist.CircularReveal
 import com.skydoves.landscapist.glide.GlideImage
-import io.github.xinkev.movies.database.relationships.PopularMovieCache
+import io.github.xinkev.movies.database.relationships.PopularMovie
 import io.github.xinkev.movies.ui.components.ErrorMessage
 import io.github.xinkev.movies.ui.components.LoadingView
 import io.github.xinkev.movies.ui.components.Votes
 
 @Composable
-fun PopularMovies(popularMovies: LazyPagingItems<PopularMovieCache>) {
+fun PopularMovies(
+    popularMovies: LazyPagingItems<PopularMovie>,
+    onVoteUpdate: (movieId: Long, voted: Boolean) -> Unit
+) {
     Column(modifier = Modifier.height(300.dp)) {
         Text(
             text = "Popular",
@@ -33,12 +35,12 @@ fun PopularMovies(popularMovies: LazyPagingItems<PopularMovieCache>) {
                 loadState = popularMovies.loadState.refresh,
                 onRetryClick = { popularMovies.refresh() }
             )
-            itemsIndexed(popularMovies) { index, item ->
+            itemsIndexed(popularMovies, key = { _, movie -> movie.data.id }) { index, item ->
                 item?.let { movie ->
                     if (index == 0) {
                         Spacer(modifier = Modifier.width(8.dp))
                     }
-                    ListItem(movie)
+                    ListItem(movie, onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) })
                     Spacer(modifier = Modifier.width(8.dp))
                 }
             }
@@ -51,7 +53,7 @@ fun PopularMovies(popularMovies: LazyPagingItems<PopularMovieCache>) {
 }
 
 @Composable
-private fun ListItem(movie: PopularMovieCache) {
+private fun ListItem(movie: PopularMovie, onVoteClick: (voted: Boolean) -> Unit) {
     Column(modifier = Modifier.width(IntrinsicSize.Min)) {
         GlideImage(
             imageModel = "https://image.tmdb.org/t/p/w500${movie.data.posterPath}",
@@ -67,7 +69,11 @@ private fun ListItem(movie: PopularMovieCache) {
             overflow = TextOverflow.Ellipsis,
             maxLines = 1
         )
-        Votes(voteCount = movie.data.voteCount)
+        Votes(
+            voteCount = movie.data.voteCount,
+            voted = movie.voteEntry != null,
+            onVoteClick = onVoteClick
+        )
     }
 }
 
