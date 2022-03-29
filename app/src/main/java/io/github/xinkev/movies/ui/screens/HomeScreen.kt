@@ -12,8 +12,11 @@ import io.github.xinkev.movies.ui.screens.components.UpcomingMovies
 @Composable
 fun HomeScreen(vm: HomeViewModel = hiltViewModel()) {
     Column(modifier = Modifier.fillMaxSize()) {
-        PopularMovies(vm.popularMovies.collectAsLazyPagingItems())
-        UpcomingMovies(vm.upcomingMovies.collectAsLazyPagingItems())
+        PopularMovies(vm.popularMovies.collectAsLazyPagingItems(), onVoteUpdate = vm::onVoteUpdate)
+        UpcomingMovies(
+            vm.upcomingMovies.collectAsLazyPagingItems(),
+            onVoteUpdate = vm::onVoteUpdate
+        )
     }
 }
 

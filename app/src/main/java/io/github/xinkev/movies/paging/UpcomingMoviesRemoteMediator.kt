@@ -6,13 +6,12 @@ import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import io.github.xinkev.movies.database.Database
-import io.github.xinkev.movies.database.entities.MovieCache
+import io.github.xinkev.movies.database.entities.Movie
 import io.github.xinkev.movies.database.entities.RemoteKey
 import io.github.xinkev.movies.database.entities.RemoteKeyIds
 import io.github.xinkev.movies.database.entities.UpcomingMovieEntry
-import io.github.xinkev.movies.database.relationships.UpcomingMovieCache
+import io.github.xinkev.movies.database.relationships.UpcomingMovie
 import io.github.xinkev.movies.remote.MovieDBApi
-import io.github.xinkev.movies.remote.RetrofitClient
 import io.github.xinkev.movies.remote.models.UpcomingMoviesResponse
 import okio.IOException
 import retrofit2.HttpException
@@ -21,15 +20,14 @@ import retrofit2.HttpException
 class UpcomingMoviesRemoteMediator constructor(
     private val db: Database,
     private val api: MovieDBApi,
-) : RemoteMediator<Int, UpcomingMovieCache>() {
+) : RemoteMediator<Int, UpcomingMovie>() {
     private val remoteKeyDao = db.remoteKeyDao()
     private val movieDao = db.moviesDao()
-    private val upcomingMovieDao = db.upcomingMovieDao()
     private val upcomingEntryDao = db.upcomingEntryDao()
 
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, UpcomingMovieCache>
+        state: PagingState<Int, UpcomingMovie>
     ): MediatorResult {
         return try {
             val response =
@@ -69,10 +67,10 @@ class UpcomingMoviesRemoteMediator constructor(
         )
         db.withTransaction {
             if (loadType == LoadType.REFRESH) {
-                upcomingMovieDao.deleteAll()
+                movieDao.deleteAllUpcomingMovies()
             }
             remoteKeyDao.insertOrReplace(remoteKey)
-            val movies = response.results.map { MovieCache.fromResponse(it) }
+            val movies = response.results.map { Movie.fromResponse(it) }
             val upcomingEntries = movies.map { movie -> UpcomingMovieEntry(movieId = movie.id) }
             movieDao.insertAll(movies)
             upcomingEntryDao.insertAll(upcomingEntries)

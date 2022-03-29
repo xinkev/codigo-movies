@@ -3,14 +3,10 @@ package io.github.xinkev.movies.ui.screens.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -19,13 +15,16 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
 import com.skydoves.landscapist.CircularReveal
 import com.skydoves.landscapist.glide.GlideImage
-import io.github.xinkev.movies.database.relationships.UpcomingMovieCache
+import io.github.xinkev.movies.database.relationships.UpcomingMovie
 import io.github.xinkev.movies.ui.components.ErrorMessage
 import io.github.xinkev.movies.ui.components.LoadingView
 import io.github.xinkev.movies.ui.components.Votes
 
 @Composable
-fun UpcomingMovies(upcomingMovies: LazyPagingItems<UpcomingMovieCache>) {
+fun UpcomingMovies(
+    upcomingMovies: LazyPagingItems<UpcomingMovie>,
+    onVoteUpdate: (movieId: Long, voted: Boolean) -> Unit,
+) {
     Column {
         Text(
             text = "Upcoming Movies",
@@ -37,9 +36,11 @@ fun UpcomingMovies(upcomingMovies: LazyPagingItems<UpcomingMovieCache>) {
                 loadState = upcomingMovies.loadState.refresh,
                 onRetryClick = { upcomingMovies.refresh() }
             )
-            items(upcomingMovies, key = { it.entry.id }) { item ->
+            items(upcomingMovies, key = { it.data.id }) { item ->
                 item?.let { movie ->
-                    UpcomingMovieListItem(movie)
+                    UpcomingMovieListItem(
+                        movie,
+                        onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) })
                 }
             }
             showLoadingState(
@@ -51,7 +52,7 @@ fun UpcomingMovies(upcomingMovies: LazyPagingItems<UpcomingMovieCache>) {
 }
 
 @Composable
-private fun UpcomingMovieListItem(movie: UpcomingMovieCache) {
+private fun UpcomingMovieListItem(movie: UpcomingMovie, onVoteClick: (voted: Boolean) -> Unit) {
     Row(modifier = Modifier.padding(16.dp)) {
         GlideImage(
             imageModel = "https://image.tmdb.org/t/p/w500${movie.data.posterPath}",
@@ -72,11 +73,10 @@ private fun UpcomingMovieListItem(movie: UpcomingMovieCache) {
                 maxLines = 6
             )
             Spacer(modifier = Modifier.height(8.dp))
-            Votes(movie.data.voteCount)
+            Votes(movie.data.voteCount, movie.voteEntry != null, onVoteClick)
         }
     }
 }
-
 
 
 private fun LazyListScope.showLoadingState(

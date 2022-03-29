@@ -4,8 +4,8 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import io.github.xinkev.movies.remote.models.MovieResponse
 
-@Entity(tableName = "Movies")
-data class MovieCache(
+@Entity(tableName = "Movie")
+data class Movie(
     @PrimaryKey
     val id: Long,
     val adult: Boolean,
@@ -18,11 +18,11 @@ data class MovieCache(
     val title: String,
     val video: Boolean,
     val voteAverage: Double,
-    val voteCount: Int
+    val voteCount: Int,
 ) {
     companion object {
-        fun fromResponse(response: MovieResponse): MovieCache =
-            MovieCache(
+        fun fromResponse(response: MovieResponse): Movie =
+            Movie(
                 id = response.id,
                 adult = response.adult,
                 originalLanguage = response.originalLanguage,
