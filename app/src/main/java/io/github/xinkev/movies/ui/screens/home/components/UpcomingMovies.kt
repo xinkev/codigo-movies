@@ -1,5 +1,6 @@
-package io.github.xinkev.movies.ui.screens.components
+package io.github.xinkev.movies.ui.screens.home.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
@@ -18,11 +19,13 @@ import io.github.xinkev.movies.database.relationships.UpcomingMovie
 import io.github.xinkev.movies.ui.components.ErrorMessage
 import io.github.xinkev.movies.ui.components.LoadingView
 import io.github.xinkev.movies.ui.components.Votes
+import io.github.xinkev.movies.utils.imageUrl
 
 @Suppress("FunctionName")
 fun LazyListScope.UpcomingMovies(
     upcomingMovies: LazyPagingItems<UpcomingMovie>,
     onVoteUpdate: (movieId: Long, voted: Boolean) -> Unit,
+    onMovieClick: (movieId: Long) -> Unit,
 ) {
     item {
         Text(
@@ -39,7 +42,9 @@ fun LazyListScope.UpcomingMovies(
         item?.let { movie ->
             UpcomingMovieListItem(
                 movie,
-                onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) })
+                onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) },
+                onClick = { onMovieClick(movie.data.id) }
+            )
         }
     }
     showLoadingState(
@@ -49,10 +54,16 @@ fun LazyListScope.UpcomingMovies(
 }
 
 @Composable
-private fun UpcomingMovieListItem(movie: UpcomingMovie, onVoteClick: (voted: Boolean) -> Unit) {
-    Row(modifier = Modifier.padding(16.dp)) {
+private fun UpcomingMovieListItem(
+    movie: UpcomingMovie,
+    onVoteClick: (voted: Boolean) -> Unit,
+    onClick: () -> Unit
+) {
+    Row(modifier = Modifier
+        .padding(16.dp)
+        .clickable(onClick = onClick)) {
         GlideImage(
-            imageModel = "https://image.tmdb.org/t/p/w500${movie.data.posterPath}",
+            imageModel = imageUrl(movie.data.posterPath),
             circularReveal = CircularReveal(),
             modifier = Modifier
                 .height(150.dp)

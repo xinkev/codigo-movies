@@ -12,11 +12,13 @@ import io.github.xinkev.movies.database.entities.*
         Movie::class,
         RemoteKey::class,
         MovieVoteEntry::class,
+        MovieDetails::class,
     ],
     version = 1
 )
 abstract class Database : RoomDatabase() {
     abstract fun moviesDao(): MovieDao
+    abstract fun movieDetailsDao(): MovieDetailsDao
     abstract fun remoteKeyDao(): RemoteKeyDao
     abstract fun popularTableDao(): PopularTableDao
     abstract fun upcomingEntryDao(): UpcomingEntryDao

@@ -8,6 +8,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.github.xinkev.movies.database.Database
+import io.github.xinkev.movies.utils.AppCoroutineDispatchers
+import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
 
 @Module
@@ -20,4 +22,8 @@ object AppModule {
         Database::class.java,
         "movies.db"
     ).build()
+
+    @Provides
+    @Singleton
+    fun ioDispatcher(): AppCoroutineDispatchers = AppCoroutineDispatchers(io = Dispatchers.IO)
 }

@@ -1,6 +1,7 @@
-package io.github.xinkev.movies.ui.screens.components
+package io.github.xinkev.movies.ui.screens.home.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -24,7 +25,8 @@ import io.github.xinkev.movies.ui.components.Votes
 @Suppress("FunctionName")
 fun LazyListScope.PopularMovies(
     popularMovies: LazyPagingItems<PopularMovie>,
-    onVoteUpdate: (movieId: Long, voted: Boolean) -> Unit
+    onVoteUpdate: (movieId: Long, voted: Boolean) -> Unit,
+    onMovieClick: (movieId: Long) -> Unit,
 ) {
     item {
         Column(modifier = Modifier.height(280.dp)) {
@@ -45,7 +47,9 @@ fun LazyListScope.PopularMovies(
                         }
                         ListItem(
                             movie,
-                            onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) })
+                            onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) },
+                            onClick = { onMovieClick(movie.data.id) }
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                     }
                 }
@@ -59,8 +63,16 @@ fun LazyListScope.PopularMovies(
 }
 
 @Composable
-private fun ListItem(movie: PopularMovie, onVoteClick: (voted: Boolean) -> Unit) {
-    Column(modifier = Modifier.width(IntrinsicSize.Min)) {
+private fun ListItem(
+    movie: PopularMovie,
+    onVoteClick: (voted: Boolean) -> Unit,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .width(IntrinsicSize.Min)
+            .clickable(onClick = onClick)
+    ) {
         GlideImage(
             imageModel = "https://image.tmdb.org/t/p/w500${movie.data.posterPath}",
             circularReveal = CircularReveal(),
