@@ -1,5 +1,6 @@
 package io.github.xinkev.movies.ui.screens.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,35 +20,40 @@ import io.github.xinkev.movies.ui.components.ErrorMessage
 import io.github.xinkev.movies.ui.components.LoadingView
 import io.github.xinkev.movies.ui.components.Votes
 
-@Composable
-fun PopularMovies(
+@OptIn(ExperimentalFoundationApi::class)
+@Suppress("FunctionName")
+fun LazyListScope.PopularMovies(
     popularMovies: LazyPagingItems<PopularMovie>,
     onVoteUpdate: (movieId: Long, voted: Boolean) -> Unit
 ) {
-    Column(modifier = Modifier.height(300.dp)) {
-        Text(
-            text = "Popular",
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(top = 16.dp, start = 16.dp, bottom = 8.dp)
-        )
-        LazyRow {
-            showLoadingState(
-                loadState = popularMovies.loadState.refresh,
-                onRetryClick = { popularMovies.refresh() }
+    item {
+        Column(modifier = Modifier.height(280.dp)) {
+            Text(
+                text = "Popular",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 16.dp, start = 16.dp, bottom = 8.dp)
             )
-            itemsIndexed(popularMovies, key = { _, movie -> movie.data.id }) { index, item ->
-                item?.let { movie ->
-                    if (index == 0) {
+            LazyRow {
+                showLoadingState(
+                    loadState = popularMovies.loadState.refresh,
+                    onRetryClick = { popularMovies.refresh() }
+                )
+                itemsIndexed(popularMovies, key = { _, movie -> movie.data.id }) { index, item ->
+                    item?.let { movie ->
+                        if (index == 0) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        ListItem(
+                            movie,
+                            onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) })
                         Spacer(modifier = Modifier.width(8.dp))
                     }
-                    ListItem(movie, onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) })
-                    Spacer(modifier = Modifier.width(8.dp))
                 }
+                showLoadingState(
+                    loadState = popularMovies.loadState.append,
+                    onRetryClick = { popularMovies.retry() },
+                )
             }
-            showLoadingState(
-                loadState = popularMovies.loadState.append,
-                onRetryClick = { popularMovies.retry() },
-            )
         }
     }
 }
@@ -59,7 +65,7 @@ private fun ListItem(movie: PopularMovie, onVoteClick: (voted: Boolean) -> Unit)
             imageModel = "https://image.tmdb.org/t/p/w500${movie.data.posterPath}",
             circularReveal = CircularReveal(),
             modifier = Modifier
-                .height(200.dp)
+                .height(150.dp)
                 .aspectRatio(0.7f)
         )
         Text(

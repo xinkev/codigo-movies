@@ -1,7 +1,6 @@
 package io.github.xinkev.movies.ui.screens.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -20,35 +19,33 @@ import io.github.xinkev.movies.ui.components.ErrorMessage
 import io.github.xinkev.movies.ui.components.LoadingView
 import io.github.xinkev.movies.ui.components.Votes
 
-@Composable
-fun UpcomingMovies(
+@Suppress("FunctionName")
+fun LazyListScope.UpcomingMovies(
     upcomingMovies: LazyPagingItems<UpcomingMovie>,
     onVoteUpdate: (movieId: Long, voted: Boolean) -> Unit,
 ) {
-    Column {
+    item {
         Text(
             text = "Upcoming Movies",
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 16.dp, start = 16.dp, bottom = 8.dp)
         )
-        LazyColumn {
-            showLoadingState(
-                loadState = upcomingMovies.loadState.refresh,
-                onRetryClick = { upcomingMovies.refresh() }
-            )
-            items(upcomingMovies, key = { it.data.id }) { item ->
-                item?.let { movie ->
-                    UpcomingMovieListItem(
-                        movie,
-                        onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) })
-                }
-            }
-            showLoadingState(
-                loadState = upcomingMovies.loadState.append,
-                onRetryClick = { upcomingMovies.retry() },
-            )
+    }
+    showLoadingState(
+        loadState = upcomingMovies.loadState.refresh,
+        onRetryClick = { upcomingMovies.refresh() }
+    )
+    items(upcomingMovies, key = { it.data.id }) { item ->
+        item?.let { movie ->
+            UpcomingMovieListItem(
+                movie,
+                onVoteClick = { voted -> onVoteUpdate(movie.data.id, voted) })
         }
     }
+    showLoadingState(
+        loadState = upcomingMovies.loadState.append,
+        onRetryClick = { upcomingMovies.retry() },
+    )
 }
 
 @Composable
